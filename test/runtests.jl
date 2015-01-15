@@ -22,3 +22,10 @@ recursive_ols!(estimates, y, x)
 
 recursive_ols!(estimates, errors, y, x)
 @test estimates == b1
+
+## Make sure basic bootstraps run
+b = Array(Float64, 199) ## Initialize storage. Each call will
+                        ## overwrite the previous results
+recursive_bootstrap!(b, :naive, Block(:moving, 15), y, x, R)
+recursive_bootstrap!(b, :cs07_ols, Block(:moving, 15), y, x, R)
+recursive_bootstrap!(b, :mine_ols, Block(:moving, 15), y, x, R)
