@@ -12,10 +12,13 @@ x = [ones(n) randn(n, k-1)]
 estimates = Array(Float64, k, P)
 errors = Array(Float64, P)
 
+## Verify that recursive_ols produces the right estimates.
+b1 = recursive_ols(y, x, R)
+@test b1[:,1] == x[1:R,:] \ y[1:R]
+@test b1[:,end] == x[1:end-1,:] \ y[1:end-1]
+
 ## Make sure that different functions to get the recursive OLS
 ## estimates return the same values.
-
-b1 = recursive_ols(y, x, R)
 recursive_ols!(estimates, y, x)
 @test estimates == b1
 
