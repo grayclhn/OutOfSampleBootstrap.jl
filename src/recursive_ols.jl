@@ -17,37 +17,50 @@ forecast y[R+j] rom x[R+j,:].
 There are also a methods that return the OLS estimators and the implied
 prediction errors.
 """
+Index = Union(AbstractVector{Int},Range{Int},UnitRange{Int})
 
 @doc recursive_ols_overview ->
-function recursive_ols!(estimates::Array{Float64}, y, x)
+function recursive_ols!(estimates::AbstractMatrix{Float64},
+                        y::AbstractVector{Float64},
+                        x::AbstractMatrix{Float64},
+                        order::Index)
     P = size(estimates, 2)
     R = length(y) - P
     for j in 1:P
         ## Once you get the rest of the code worked out, this should
         ## be changed to use the QR decomposition with row-by-row
         ## updates explictly. That will be much faster.
-        estimates[:,j] = x[1:(R+j-1),:] \ y[1:(R+j-1)] ### <- Terrible!
+        estimates[:,j] = x[order[1:(R+j-1)],:] \ y[order[1:(R+j-1)]] ### <- Terrible!
     end
 end
 
-@doc recursive_ols_overview ->
-function recursive_ols!(estimates::Array{Float64}, errors::Array{Float64}, y, x)
+function recursive_ols!(estimates::AbstractMatrix{Float64},
+                        errors::AbstractVector{Float64},
+                        y::AbstractVector,
+                        x::AbstractMatrix,
+                        order::Index)
     P = length(errors)
     R = length(y) - P
     for j in 1:P
         ## Once you get the rest of the code worked out, this should
         ## be changed to use the QR decomposition with row-by-row
         ## updates explictly. That will be much faster.
-        estimates[:,j] = x[1:(R+j-1),:] \ y[1:(R+j-1)] ### <- Terrible!
-        errors[j] = y[R+j] - scalar(x[R+j,:] * estimates[:,j])
+        estimates[:,j] = x[order[1:(R+j-1)],:] \ y[order[1:(R+j-1)]] ### <- Terrible!
+        errors[j] = y[order[R+j]] - scalar(x[order[R+j],:] * estimates[:,j])
     end
 end    
 
 @doc recursive_ols_overview ->
-function recursive_ols(y, x, R::Integer)
+function recursive_ols(y::AbstractVector, x::AbstractMatrix, R::Integer, order::Index)
     length(y) == size(x,1) ||
       error("`y` should be a vector with the same number of elements as rows of `x`")
     estimates = Array(Float64, size(x, 2), length(y) - R)
-    recursive_ols!(estimates, y, x)
+    recursive_ols!(estimates, y, x, order)
     return estimates
 end 
+
+## Additional convenience methods
+recursive_ols!(estimates, y, x) = recursive_ols!(estimates, y, x, 1:length(y))
+recursive_ols!(estimates, errors, y, x) =
+    recursive_ols!(estimates, errors, y, x, 1:length(y))
+recursive_ols(y, x, R) = recursive_ols(y, x, R, 1:length(y))

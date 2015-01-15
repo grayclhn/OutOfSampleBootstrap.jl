@@ -90,7 +90,7 @@ function recursive_bootstrap!(b::AbstractVector,
         bootstrap_index!(bootindex, block)
         ## This is a terrible approach; I should pass the index as a
         ## separate argument and reorder in recursive_ols!
-        recursive_ols!(βhat_i, errors_i, y[bootindex], x[bootindex,:])
+        recursive_ols!(βhat_i, errors_i, y, x, bootindex)
         b[i] = (sum(L(errors_i)) - correction) / sqrt(P)
     end
 end
