@@ -1,7 +1,6 @@
 using OutOfSampleBootstraps
 using Base.Test
 
-# write your own tests here
 n = 100
 R = 30
 P = n - R
