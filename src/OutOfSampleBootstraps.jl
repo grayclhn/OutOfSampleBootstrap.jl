@@ -5,5 +5,6 @@ using Docile
 
 include("utils.jl")
 include("recursive_ols.jl")
+include("bootstrap_index.jl")
 
 end # module
