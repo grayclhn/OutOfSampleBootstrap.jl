@@ -24,13 +24,13 @@ function recursive_ols!(estimates::AbstractMatrix{Float64},
                         y::AbstractVector{Float64},
                         x::AbstractMatrix{Float64},
                         order::Index)
-    P = size(estimates, 2)
+    k, P = size(estimates)
     R = length(y) - P
+    ## QR decomposition used to construct the (hypothetical) period 0
+    ## estimate
+    Rmat = vcat(qrfact(hcat(x[order[1:R-1],:], y[order[1:R-1]]))[:R], zeros(1, k+1))
     for j in 1:P
-        ## Once you get the rest of the code worked out, this should
-        ## be changed to use the QR decomposition with row-by-row
-        ## updates explictly. That will be much faster.
-        estimates[:,j] = x[order[1:(R+j-1)],:] \ y[order[1:(R+j-1)]] ### <- Terrible!
+        estimates[:,j] = ols_update!(Rmat, x, y, order[j+R-1])
     end
 end
 
@@ -39,13 +39,13 @@ function recursive_ols!(estimates::AbstractMatrix{Float64},
                         y::AbstractVector,
                         x::AbstractMatrix,
                         order::Index)
-    P = length(errors)
+    k, P = size(estimates)
     R = length(y) - P
+    ## QR decomposition used to construct the (hypothetical) period 0
+    ## estimate
+    Rmat = vcat(qrfact(hcat(x[order[1:R-1],:], y[order[1:R-1]]))[:R], zeros(1, k+1))
     for j in 1:P
-        ## Once you get the rest of the code worked out, this should
-        ## be changed to use the QR decomposition with row-by-row
-        ## updates explictly. That will be much faster.
-        estimates[:,j] = x[order[1:(R+j-1)],:] \ y[order[1:(R+j-1)]] ### <- Terrible!
+        estimates[:,j] = ols_update!(Rmat, x, y, order[j+R-1])
         errors[j] = y[order[R+j]] - scalar(x[order[R+j],:] * estimates[:,j])
     end
 end    
@@ -58,6 +58,18 @@ function recursive_ols(y::AbstractVector, x::AbstractMatrix, R::Integer, order::
     recursive_ols!(estimates, y, x, order)
     return estimates
 end 
+
+@doc "Function that actually updates the OLS coefficients." ->
+function ols_update!(R::Matrix{Float64}, x::Matrix{Float64}, y::Vector{Float64}, j::Integer)
+    k = size(x, 2)
+    R[k+2,1:k] = x[j,:]
+    R[k+2,k+1] = y[j]
+    for i in 1:k
+        A_mul_B!(givens(R, i, k+2, i), R)
+    end
+    ## This needs to be changed to impose R[1:k,1:k] is upper triangular.
+    return R[1:k, 1:k] \ R[1:k, k+1]
+end
 
 ## Additional convenience methods
 recursive_ols!(estimates, y, x) = recursive_ols!(estimates, y, x, 1:length(y))
