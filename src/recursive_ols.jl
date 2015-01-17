@@ -30,7 +30,7 @@ function recursive_ols!(estimates::AbstractMatrix{Float64},
     ## estimate
     Rmat = vcat(qrfact(hcat(x[order[1:R-1],:], y[order[1:R-1]]))[:R], zeros(1, k+1))
     for j in 1:P
-        estimates[:,j] = ols_update!(Rmat, x, y, order[j+R-1])
+        ols_update!(sub(estimates,:,j), Rmat, x, y, order[j+R-1])
     end
 end
 
@@ -45,7 +45,7 @@ function recursive_ols!(estimates::AbstractMatrix{Float64},
     ## estimate
     Rmat = vcat(qrfact(hcat(x[order[1:R-1],:], y[order[1:R-1]]))[:R], zeros(1, k+1))
     for j in 1:P
-        estimates[:,j] = ols_update!(Rmat, x, y, order[j+R-1])
+        ols_update!(sub(estimates,:,j), Rmat, x, y, order[j+R-1])
         errors[j] = y[order[R+j]] - scalar(x[order[R+j],:] * estimates[:,j])
     end
 end    
@@ -60,15 +60,17 @@ function recursive_ols(y::AbstractVector, x::AbstractMatrix, R::Integer, order::
 end 
 
 @doc "Function that actually updates the OLS coefficients." ->
-function ols_update!(R::Matrix{Float64}, x::Matrix{Float64}, y::Vector{Float64}, j::Integer)
+function ols_update!(b::AbstractVector{Float64}, R::AbstractMatrix{Float64},
+                     x::AbstractMatrix{Float64}, y::AbstractVector{Float64},
+                     j::Integer)
     k = size(x, 2)
     R[k+2,1:k] = x[j,:]
     R[k+2,k+1] = y[j]
     for i in 1:k
         A_mul_B!(givens(R, i, k+2, i), R)
     end
-    ## This needs to be changed to impose R[1:k,1:k] is upper triangular.
-    return R[1:k, 1:k] \ R[1:k, k+1]
+    b[1:k] = copy(R[1:k,k+1])
+    Base.LinAlg.LAPACK.trtrs!('U', 'N', 'N', sub(R, 1:k, 1:k), b)
 end
 
 ## Additional convenience methods
