@@ -67,7 +67,8 @@ function ols_update!(b::AbstractVector{Float64}, R::AbstractMatrix{Float64},
     R[k+2,1:k] = x[j,:]
     R[k+2,k+1] = y[j]
     for i in 1:k
-        A_mul_B!(givens(R, i, k+2, i), R)
+        Gi, _ = givens(R, i, k+2, i)
+        A_mul_B!(Gi, R)
     end
     b[1:k] = copy(R[1:k,k+1])
     Base.LinAlg.LAPACK.trtrs!('U', 'N', 'N', sub(R, 1:k, 1:k), b)
