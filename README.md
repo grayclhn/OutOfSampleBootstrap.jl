@@ -52,7 +52,10 @@ The OutOfSampleBootstraps.jl package is licensed under the MIT "Expat" License:
 Build status, coverage, etc
 ---------------------------
 
-* [![Build Status](https://travis-ci.org/grayclhn/OutOfSampleBootstraps.jl.svg?branch=master)](https://travis-ci.org/grayclhn/OutOfSampleBootstraps.jl)
+You can find the build and coverage status at:
 
-* [![Coverage Status](https://coveralls.io/repos/grayclhn/OutOfSampleBootstraps.jl/badge.svg)](https://coveralls.io/r/grayclhn/OutOfSampleBootstraps.jl)
+[![Build Status](https://travis-ci.org/grayclhn/OutOfSampleBootstraps.jl.svg?branch=master)](https://travis-ci.org/grayclhn/OutOfSampleBootstraps.jl)
 
+[![Coverage Status](https://coveralls.io/repos/grayclhn/OutOfSampleBootstraps.jl/badge.svg)](https://coveralls.io/r/grayclhn/OutOfSampleBootstraps.jl)
+
+When you view the repository on GitHub, these are displayed as images.
