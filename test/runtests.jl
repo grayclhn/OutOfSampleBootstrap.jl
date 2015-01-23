@@ -39,3 +39,14 @@ b = Array(Float64, 199) ## Initialize storage. Each call will
 recursive_bootstrap!(b, :naive, Block(:moving, 15), y, x, R)
 recursive_bootstrap!(b, :cs07_ols, Block(:moving, 15), y, x, R)
 recursive_bootstrap!(b, :mine_ols, Block(:moving, 15), y, x, R)
+
+α = 0.05
+L(e) = e.^2
+nboot = 39
+
+bootstrap_interval(α, nboot, OutOfSampleBootstrap(:naive),
+                   Block(:circular, 15), errors.^2)
+bootstrap_interval(α, nboot, OutOfSampleBootstrap(:cs07_ols),
+                   Block(:circular, 15), y, x, estimates, L)
+bootstrap_interval(α, nboot, OutOfSampleBootstrap(:mine_ols),
+                   Block(:circular, 15), y, x, R, L)

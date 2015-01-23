@@ -27,11 +27,6 @@ function recursive_bootstrap!(b::AbstractVector,
     end
 end
 
-function bootstrap_location(::OutOfSampleBootstrap{:naive},
-                            f::AbstractVector)
-    mean(f)
-end
-
 ## Corradi-Swanson (2007) 
 function recursive_bootstrap!(b::AbstractVector,
                               boot::OutOfSampleBootstrap{:cs07_ols},
@@ -58,22 +53,6 @@ function recursive_bootstrap!(b::AbstractVector,
     end
 end
 
-function bootstrap_location(::OutOfSampleBootstrap{:cs07_ols},
-                            y::AbstractVector,
-                            x::AbstractMatrix,
-                            βhat::AbstractMatrix,
-                            L::Function)
-    P = size(βhat, 2)
-    n = length(y)
-    fsum = 0.0
-    for j in 1:P
-        for s in 2:n
-            fsum += L(y[s] - scalar(x[s,:] * βhat[:,j]))
-        end
-    end
-    return fsum / (P * (n-1))
-end
-
 ## The new one proposed by my paper
 function recursive_bootstrap!(b::AbstractVector,
                               boot::OutOfSampleBootstrap{:mine_ols},
@@ -93,21 +72,8 @@ function recursive_bootstrap!(b::AbstractVector,
         ## This is a terrible approach; I should pass the index as a
         ## separate argument and reorder in recursive_ols!
         recursive_ols!(βhat_i, errors_i, y, x, bootindex)
-        b[i] = (sum(L(errors_i)) - correction) / sqrt(P)
+        b[i] = mean(L(errors_i))
     end
-end
-
-function bootstrap_location(::OutOfSampleBootstrap{:mine_ols},
-                            ::Block,
-                            y::AbstractVector,
-                            x::AbstractMatrix,
-                            L::Function)
-    βhat = x \ y
-    fsum = 0.0
-    for t in 1:length(y)
-        fsum += L(y[t] - scalar(x[t,:] * βhat))
-    end
-    fsum / length(y)
 end
 
 ## Several variations that wrap the main versions for
